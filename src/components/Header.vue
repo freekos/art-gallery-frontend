@@ -14,11 +14,13 @@ const hasSearch = computed(() => route.path !== '/')
         <img src="@/assets/logo.svg" alt="logo" />
       </div>
       <div class="header__right">
-        <button class="header__button">
-          <HeartIcon />
+        <button v-if="hasSearch" class="header__button">
+          <SearchIcon />
+          <span>Поиск</span>
         </button>
         <button class="header__button">
-          <SearchIcon />
+          <HeartIcon />
+          <span>Избранное</span>
         </button>
       </div>
 
@@ -56,7 +58,7 @@ const hasSearch = computed(() => route.path !== '/')
     display: flex;
     justify-self: end;
     align-items: center;
-    gap: 30px;
+    gap: 38px;
   }
 
   &__button {
@@ -67,17 +69,25 @@ const hasSearch = computed(() => route.path !== '/')
     cursor: pointer;
     background: transparent;
     border: none;
+    will-change: color;
+    transition: color 0.55s ease;
+
+    font-size: 1.25rem;
+    font-weight: 400;
+    color: rgb(var(--white-800));
+
+    >svg {
+      will-change: fill;
+      transition: fill 0.55s ease;
+    }
   }
 
-  &__button>svg {
-    will-change: fill;
-    transition: fill 0.55s ease;
-  }
-
-  &__button:hover,
-  &__button>svg:hover {
+  &__button:hover {
     color: rgb(var(--yellow-800));
-    fill: rgb(var(--yellow-800));
+
+    >svg {
+      fill: rgb(var(--yellow-800));
+    }
   }
 }
 </style>
