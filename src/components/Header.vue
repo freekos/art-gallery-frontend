@@ -47,6 +47,7 @@ const hasSearch = computed(() => route.path !== '/')
     max-width: var(--max-width);
     height: 100%;
 
+    margin: 0 auto;
     padding: 0 20px;
   }
 
@@ -87,6 +88,14 @@ const hasSearch = computed(() => route.path !== '/')
 
     >svg {
       fill: rgb(var(--yellow-800));
+    }
+  }
+
+  @media (max-width:768px) {
+    .header {
+      &__button>span {
+        display: none;
+      }
     }
   }
 }
