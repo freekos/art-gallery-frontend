@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import SearchIcon from '@/assets/icons/SearchIcon.vue';
-import { usePictureStore } from '@/stores/picture'
+import { routesMap } from '@/router';
+import { usePicturesStore } from '@/stores/picture'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import SearchIcon from '@/assets/icons/SearchIcon.vue';
+import SpinnerIcon from '@/assets/icons/SpinnerIcon.vue';
+
+const router = useRouter()
+const picturesStore = usePicturesStore()
 
 const searchValue = ref<string>('');
-
-const pictureStore = usePictureStore()
 const page = ref<number>(1)
 
 onMounted(() => {
@@ -13,16 +17,20 @@ onMounted(() => {
 })
 
 const loadPictures = (query: string) => {
-  pictureStore.getPictures({ page: page.value, query });
+  picturesStore.getPictures({ page: page.value, query });
   page.value++;
 };
 
 const handleSearch = () => {
   if (searchValue.value === '') {
-    pictureStore.searchPictures({ query: 'random' })
+    picturesStore.searchPictures({ query: 'random' })
   } else {
-    pictureStore.searchPictures({ query: searchValue.value })
+    picturesStore.searchPictures({ query: searchValue.value })
   }
+}
+
+const handleClickPicture = (id: string) => {
+  router.push(routesMap.picture(id))
 }
 
 const handleScroll = () => {
@@ -31,7 +39,7 @@ const handleScroll = () => {
   const documentHeight = document.documentElement.scrollHeight;
 
 
-  if (scrollY + windowHeight >= documentHeight - 10 && !pictureStore.picturesPending) {
+  if (scrollY + windowHeight >= documentHeight - 10 && !picturesStore.isPending && picturesStore.totalPages! >= page.value) {
     if (searchValue.value === '') {
       loadPictures('random');
     } else {
@@ -39,6 +47,7 @@ const handleScroll = () => {
     }
   }
 };
+
 onMounted(() => {
   window.addEventListener('scroll', handleScroll);
 });
@@ -65,20 +74,18 @@ onBeforeUnmount(() => {
     <section class="picture">
       <div class="container">
         <div class=" picture__list" transition-duration="0.3s" item-selector=".item">
-          <div class="picture__item" v-for="picture in pictureStore.pictures" :key="picture.id">
-            <img :src="picture.urls.regular" :alt="picture.alt_description!" />
+          <div class="picture__item" v-for="picture in picturesStore.pictures" :key="picture.id"
+            @click="handleClickPicture(picture.id)">
+            <img :src="picture.urls.regular" :alt="picture.alt_description!" loading="lazy" />
           </div>
         </div>
-        <div v-if="pictureStore.picturesPending" class="loading">
-          Loading</div>
+        <SpinnerIcon v-if="picturesStore.isPending" class="loading" />
       </div>
     </section>
   </main>
 </template>
 <style scoped lang="scss">
 .hero {
-  width: 100%;
-
   margin-bottom: 130px;
 
   &__content {
@@ -113,8 +120,6 @@ onBeforeUnmount(() => {
     font-size: 2.5rem;
     font-weight: 300;
   }
-
-
 
   &__button {
     display: flex;
@@ -151,6 +156,8 @@ onBeforeUnmount(() => {
 
 
 .picture {
+  padding-bottom: 50px;
+
   &__list {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -159,6 +166,8 @@ onBeforeUnmount(() => {
 
   &__item {
     border-radius: 10px;
+
+    cursor: pointer;
   }
 
   &__item>img {
@@ -168,15 +177,6 @@ onBeforeUnmount(() => {
 
     border-radius: inherit;
   }
-}
-
-.loading {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  font-size: 1.5rem;
-  font-weight: 700;
 }
 
 @media (max-width: 1024px) {
